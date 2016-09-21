@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="KisSaleBill">
+    <typeAlias alias="Order" type="com.ircloud.ydh.sdk4j.model.Order"/>
+    <typeAlias alias="OrderDetail" type="com.ircloud.ydh.sdk4j.model.OrderDetail"/>
+
+   <sql id="Base_Columns">
+    FInterID, 
+	FBillNo, 
+	FBrNo, 
+	FTranType, 
+	FCancellation, 
+	FStatus, 
+	FDiscountType, 
+	Fdate, 
+	FCustAddress, 
+	FSaleStyle, 
+	FFetchStyle, 
+	FCurrencyID, 
+	FCustID, 
+	FFetchAdd, 
+	FCheckDate, 
+	FMangerID, 
+	FDeptID, 
+	FEmpID, 
+	FBillerID, 
+	FSettleID, 
+	FExchangeRateType, 
+	FExchangeRate, 
+	FMultiCheckDate1, 
+	FMultiCheckDate2, 
+	FMultiCheckDate3, 
+	FMultiCheckDate4, 
+	FMultiCheckDate5, 
+	FMultiCheckDate6, 
+	FPOOrdBillNo, 
+	FRelateBrID, 
+	FTransitAheadTime, 
+	FImport, 
+	FSelTranType, 
+	FBrID, 
+	FSettleDate, 
+	FExplanation, 
+	FAreaPS, 
+	FManageType, 
+	FSysStatus, 
+	FValidaterName, 
+	FConsignee, 
+	FVersionNo, 
+	FChangeDate, 
+	FChangeUser, 
+	FChangeCauses, 
+	FChangeMark, 
+	FPrintCount, 
+	FPlanCategory
+  </sql>
+  
+  <sql id="Detail_Base_Columns">
+    FInterID, 
+	FEntryID, 
+	FBrNo, 
+	FMapNumber, 
+	FMapName, 
+	FItemID, 
+	FAuxPropID, 
+	FQty, 
+	FUnitID, 
+	Fauxqty, 
+	FSecCoefficient, 
+	FSecQty, 
+	Fauxprice, 
+	FAuxTaxPrice, 
+	Famount, 
+	FCess, 
+	FTaxRate, 
+	FUniDiscount, 
+	FTaxAmount, 
+	FAuxPriceDiscount, 
+	FTaxAmt, 
+	FAllAmount, 
+	FTranLeadTime, 
+	FInForecast, 
+	FDate, 
+	Fnote, 
+	FPlanMode, 
+	FMTONo, 
+	FBOMCategory, 
+	FBomInterID, 
+	FOrderBOMStatus, 
+	FCostObjectID, 
+	FAdviceConsignDate, 
+	FATPDeduct, 
+	FLockFlag, 
+	FSourceBillNo, 
+	FSourceTranType, 
+	FSourceInterId, 
+	FSourceEntryID, 
+	FContractBillNo, 
+	FContractInterID, 
+	FContractEntryID, 
+	FSecCommitInstall, 
+	FCommitInstall, 
+	FAuxCommitInstall, 
+	FAllStdAmount, 
+	FMrpLockFlag, 
+	FHaveMrp, 
+	FReceiveAmountFor_Commit, 
+	FOrderBOMInterID, 
+	FOrderBillNo, 
+	FOrderEntryID     	
+  </sql>
+
+    <insert id="saveOrder" parameterClass="Order">
+       insert into SEOrder(<include refid="Base_Columns"/>)
+       values(
+				(select MAX(FInterID)+1 from SEOrder),
+				#orderNum#,
+				'0',
+				81,
+				0,
+				0,
+				0,
+				(select CONVERT(char,#createTime#,23)),
+				0,
+				101,
+				'',
+				1,
+				isnull((Select FItemID FROM T_Organization where FNumber=#customer.code#),'000'),
+				'',
+				Null,
+				0,
+				0,
+				2929,
+				2929,
+				0,
+				1,
+				1,
+				Null,
+				Null,
+				Null,
+				Null,
+				Null,
+				Null,
+				'',
+				0,
+				'3',
+				0,
+				0,
+				0,
+				(select CONVERT(char,#createTime#,23)),
+				'',
+				20302,
+				0,
+				2,
+				'',
+				0,
+				'000',
+				Null,
+				0,
+				'',
+				'',
+				0,
+				'1'
+       		)
+    </insert>
+    
+    <insert id="saveOrderDetail" parameterClass="OrderDetail">
+       insert into SEOrderEntry(<include refid="Detail_Base_Columns"/>)
+       values(
+				(select FInterID from  SEOrder where FBillNo = #orderNum#),
+				isnull((select MAX(FEntryID)+1 from SEOrderEntry where FInterID = (select FInterID from  SEOrder where FBillNo = #orderNum#)),1),
+				'0',
+				'',
+				'',
+				isnull((select FItemID from t_ICItemCore where FNumber = #productCode#),0),
+				0,
+				#count#,
+				isnull((select FUnitID from T_ICItemBase where FItemID = (select FItemID from t_ICItemCore where FNumber = #productCode#)),0),
+				#count#,
+				0,
+				0,
+				#price#,
+				(select (FTaxRate+100)/100*#price# from T_ICItemMaterial where FItemID = (select FItemID from t_ICItemCore where FNumber = #productCode#)),
+				#count#*#price#,
+				(select FTaxRate from T_ICItemMaterial where FItemID = (select FItemID from t_ICItemCore where FNumber = #productCode#)),
+				0,
+				0,
+				0,
+				(select (FTaxRate+100)/100*#price# from T_ICItemMaterial where FItemID = (select FItemID from t_ICItemCore where FNumber = #productCode#)),
+				0,
+				(select (FTaxRate+100)/100*#price#*#count# from T_ICItemMaterial where FItemID = (select FItemID from t_ICItemCore where FNumber = #productCode#)),
+				'',
+				0,
+				'',
+				'',
+				14036,
+				'',
+				0,
+				0,
+				0,
+				'0',
+				'',
+				0,
+				0,
+				'',
+				0,
+				0,
+				0,
+				'',
+				0,
+				0,
+				0,
+				0,
+				0,
+				(select (FTaxRate+100)/100*#price#*#count# from T_ICItemMaterial where FItemID = (select FItemID from t_ICItemCore where FNumber = #productCode#)),
+				0,
+				0,
+				0,
+				0,
+				'',
+				''
+       )
+    </insert>
+    
+        
+    <delete id="deleteOrder" parameterClass="Order">    
+        delete from SEOrder where FBillNo = #orderNum#
+    </delete>
+    
+    <update id="deleteReturnedOrders" parameterClass="java.util.List">
+      DELETE FROM SEOrder WHERE FBillNo in
+      <iterate conjunction="," open="(" close=")">
+         #list[].orderNum#
+      </iterate>
+    </update>   
+    
+    <update id="deleteReturnedOrderDetails" parameterClass="java.util.List">
+      DELETE FROM SEOrderEntry WHERE FInterID in (select FInterID from SEOrder where FBillNo in
+	      <iterate conjunction="," open="(" close=")">
+	         #list[].orderNum#	         
+	      </iterate>
+	  )
+    </update>
+    
+</sqlMap>

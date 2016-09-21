@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="KisInventory">
+    
+   <resultMap id="resultmap" class="java.util.HashMap">  
+     <result property="code" column="code" javaType="java.lang.String" />  
+     <result property="count" column="count" javaType="java.lang.String" />  
+    </resultMap>  
+
+    <select id="findAllInventory" resultMap="resultmap" parameterClass="map">
+      select 
+		p1.FNumber as code ,
+		isnull(k1.fqty,0) as count
+ 		from t_ICItemCore p1
+ 		left join (
+					select FItemID, SUM(FQty) as  fqty
+					from ICInventory 
+					where FStockID in (111848,358,355,362,374,368,369,75500,384,375,396,397,385,432,435,427,447,446,436,430,429,437,438,439,90938,433,428,443,441,442,425,440,444,434,426,388,401,393,394,112388,108416,71435,71704,80304,87541,90937,96172,98429,106973,106972)
+					group by FItemID 
+ 				) k1
+ 			on p1.FItemID = k1.FItemID
+ 		order by FNumber
+    </select>
+    
+    <update id="updateSyncStatus" parameterClass="map">
+      update t_inventory_sync_status
+      <dynamic prepend="set" >
+        FSYNC_STATUS=#sync_status#
+      </dynamic>     
+      where FID=#FID#      
+    </update>
+    
+    
+</sqlMap>

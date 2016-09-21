@@ -1,0 +1,1 @@
+(select '²ú³ÉÆ·_' + FName from T_Item  where fitemclassid = 4  and FItemID = t1.FParentID) as type

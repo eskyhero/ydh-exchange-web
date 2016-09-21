@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+
+<sqlMap namespace="KisGoods">
+
+    <typeAlias alias="Goods" type="com.ircloud.ydh.sdk4j.model.Goods"/>
+    
+    <resultMap id="BaseResultMap" class="Goods" >
+	   	<result column="code"             property="code"            jdbcType="VARCHAR" />
+	   	<result column="barcode"          property="barcode"         jdbcType="VARCHAR" />
+	    <result column="name"             property="name"            jdbcType="VARCHAR" />
+	    <result column="marketPrice"      property="marketPrice"     jdbcType="CHAR"/> 
+	    <result column="productUnitName"    property="productUnitName"   jdbcType="CHAR"/>
+	    <!--<result column="productTypeId"    property="productTypeId"   jdbcType="CHAR"/>-->
+	    <result column="mulspec1Name"     property="mulspec1Name"    jdbcType="VARCHAR" />
+	    <result column="mulspec1Value"    property="mulspec1Value"   jdbcType="VARCHAR" />
+	    <!--<result column="mulspec2Name"     property="mulspec2Name"    jdbcType="VARCHAR" />-->
+	    <!--<result column="mulspec2Value"    property="mulspec2Value"   jdbcType="VARCHAR" />-->
+	    <result column="type"             property="productTypeName" jdbcType="VARCHAR" />   
+    </resultMap>
+    
+    <resultMap id="BaseResultMapIncludeId" class="Goods" >
+        <result column="id"               property="id"              jdbcType="VARCHAR" />
+        <result column="code"             property="code"            jdbcType="VARCHAR" />
+        <result column="barcode"          property="barcode"         jdbcType="VARCHAR" />    
+	    <result column="name"             property="name"            jdbcType="VARCHAR" />
+	    <!--<result column="marketPrice"      property="marketPrice"     jdbcType="CHAR"/>-->  
+	    <result column="productUnitName"    property="productUnitName"   jdbcType="CHAR"/>
+	    <!--<result column="productTypeId"    property="productTypeId"   jdbcType="CHAR"/>-->
+	    <result column="mulspec1Name"     property="mulspec1Name"    jdbcType="VARCHAR" />
+	    <result column="mulspec1Value"    property="mulspec1Value"   jdbcType="VARCHAR" />
+	     <!--<result column="mulspec2Name"     property="mulspec2Name"    jdbcType="VARCHAR" />-->
+	     <!--<result column="mulspec2Value"    property="mulspec2Value"   jdbcType="VARCHAR" />-->    
+    </resultMap>
+       
+    <select id="findGoodses" resultMap="BaseResultMap">
+    select 
+			t1.FNumber as barcode,
+			t1.FNumber as code,
+			t1.FName as name,
+			0 as marketPrice,
+			t3.FName as productUnitName,
+			'商品规格'  as mulspec1Name,
+			case when t1.FModel = '' then '无' else t1.FModel end as mulspec1Value,
+			'通用' as type
+		from t_ICItemCore t1
+		inner join t_ICItemBase t2 on t1.FItemID = t2.FItemID
+		left join t_MeasureUnit t3 on t2.FUnitID = t3.FMeasureUnitID
+		inner join uploadGoodsflag f on t1.FItemID = f.spinnerid and f.flag = 0
+		where t1.FDeleted = 0 and t1.FNumber like '05.%'
+		order by t1.FNumber
+    </select>
+    
+    <select id="findReturnedGoodses" resultMap="BaseResultMapIncludeId">
+    	select 
+			id, code, barcode, name, productUnitName, mulspec1Name, mulspec1Value
+		from uploadGoods
+		where barcode in(
+			select spinnerid from uploadGoodsflag where flag = 1
+		)
+    </select>
+    
+    	
+    <insert id="insertReturnedGoods" parameterClass="Goods">
+    	insert into uploadGoods(
+			id, code, barcode, name, productUnitName, mulspec1Name, mulspec1Value, flag
+			)
+		values(
+			#id#, #code#, #barcode#, #name#, #productUnitName#, #mulspec1Name#, #mulspec1Value#, 2
+			)
+    </insert>
+    
+    <update id="modifySyncState"  parameterClass="Goods">
+    	update uploadGoodsflag
+		set flag = 
+			case 
+				when syncedflag = 1 then 1
+				when syncedflag = 0 then 2
+			end,
+		syncedflag = 0
+		where spcode = #code#
+
+    </update>
+    
+    <delete id="cleanReturnedGoodses">
+		delete from uploadGoods 
+		where code in (
+			select spcode from uploadGoodsflag where flag = 2
+		)      
+    </delete>
+    
+
+</sqlMap>
