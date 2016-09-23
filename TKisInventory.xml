@@ -10,7 +10,7 @@
     </resultMap>  
 
     <select id="findAllInventory" resultMap="resultmap" parameterClass="map">
-      select 
+       select 
 		p1.FNumber as code ,
 		isnull(k1.fqty,0) as count
  		from t_ICItemCore p1
@@ -21,6 +21,7 @@
 					group by FItemID 
  				) k1
  			on p1.FItemID = k1.FItemID
+			and FNumber like '05.%'
  		order by FNumber
     </select>
     
